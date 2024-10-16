@@ -34,7 +34,6 @@ import kinoko.world.field.drop.Drop;
 import kinoko.world.field.drop.DropEnterType;
 import kinoko.world.field.drop.DropOwnType;
 import kinoko.world.field.mob.Mob;
-import kinoko.world.field.mob.MobAppearType;
 import kinoko.world.field.npc.Npc;
 import kinoko.world.field.reactor.Reactor;
 import kinoko.world.item.*;
@@ -263,18 +262,15 @@ public final class ScriptManagerImpl implements ScriptManager {
                     cs.getSp().addSp(jobLevel, 3); // 1st – 6th & 10th Mastery -> Extra 3 SP at each activation level
                 }
                 case 7, 8, 9 -> {
-                    cs.getSp().addSp(jobLevel, 5); // 7th-9th Mastery -> Extra 5 SP at each activation level
+                    cs.getSp().addSp(jobLevel, 5); // 7th - 9th Mastery -> Extra 5 SP at each activation level
                 }
             }
-        } else if (JobConstants.isExtendSpJob(jobId)) {
+        } else if (JobConstants.isResistanceJob(jobId)) {
             switch (jobLevel) {
                 case 1 -> {
-                    cs.getSp().setSp(jobLevel, Math.max(cs.getLevel() - 10, 0) * 3 + 1);
+                    cs.getSp().setSp(jobLevel, Math.max(cs.getLevel() - 10, 0) * 3 + 5);
                 }
-                case 2, 3 -> {
-                    cs.getSp().addSp(jobLevel, 1);
-                }
-                case 4 -> {
+                case 2, 3, 4 -> {
                     cs.getSp().addSp(jobLevel, 3);
                 }
             }
@@ -404,6 +400,20 @@ public final class ScriptManagerImpl implements ScriptManager {
     }
 
     @Override
+    public void addSp(int jobLevel, int skillPoint) {
+        final CharacterStat cs = user.getCharacterStat();
+        if (JobConstants.isExtendSpJob(cs.getJob())) {
+            cs.getSp().addSp(jobLevel, skillPoint);
+            user.validateStat();
+            user.write(WvsContext.statChanged(Stat.SP, cs.getSp(), false));
+        } else {
+            cs.getSp().addNonExtendSp(skillPoint);
+            user.validateStat();
+            user.write(WvsContext.statChanged(Stat.SP, (short) cs.getSp().getNonExtendSp(), false));
+        }
+    }
+
+    @Override
     public void setConsumeItemEffect(int itemId) {
         final Optional<ItemInfo> itemInfoResult = ItemProvider.getItemInfo(itemId);
         if (itemInfoResult.isEmpty()) {
@@ -438,11 +448,6 @@ public final class ScriptManagerImpl implements ScriptManager {
     }
 
     @Override
-    public boolean addItem(int itemId, int quantity) {
-        return addItems(List.of(Tuple.of(itemId, quantity)));
-    }
-
-    @Override
     public boolean addItems(List<Tuple<Integer, Integer>> items) {
         if (!canAddItems(items)) {
             return false;
@@ -472,22 +477,8 @@ public final class ScriptManagerImpl implements ScriptManager {
     }
 
     @Override
-    public boolean canAddItem(int itemId, int quantity) {
-        return canAddItems(List.of(Tuple.of(itemId, quantity)));
-    }
-
-    @Override
     public boolean canAddItems(List<Tuple<Integer, Integer>> items) {
         return user.getInventoryManager().canAddItems(items);
-    }
-
-    @Override
-    public boolean removeItem(int itemId) {
-        final int itemCount = getItemCount(itemId);
-        if (itemCount > 0) {
-            return removeItem(itemId, itemCount);
-        }
-        return true;
     }
 
     @Override
@@ -512,11 +503,6 @@ public final class ScriptManagerImpl implements ScriptManager {
         // Equipped inventory = equip inventory with -position
         user.write(WvsContext.inventoryOperation(InventoryOperation.delItem(InventoryType.EQUIP, -bodyPart.getValue()), false));
         return true;
-    }
-
-    @Override
-    public boolean hasItem(int itemId) {
-        return hasItem(itemId, 1);
     }
 
     @Override
@@ -663,18 +649,14 @@ public final class ScriptManagerImpl implements ScriptManager {
     }
 
     @Override
-    public void warpInstance(int mapId, String portalName, int returnMap, int timeLimit) {
-        warpInstance(List.of(mapId), portalName, returnMap, timeLimit);
-    }
-
-    @Override
-    public void warpInstance(List<Integer> mapIds, String portalName, int returnMap, int timeLimit) {
+    public void warpInstance(List<Integer> mapIds, String portalName, int returnMap, int timeLimit, Map<String, String> variables) {
         // Create instance
         final Optional<Instance> instanceResult = user.getConnectedServer().createInstance(mapIds, returnMap, timeLimit);
         if (instanceResult.isEmpty()) {
             throw new ScriptError("Could not create instance for map IDs : %s", mapIds);
         }
         final Instance instance = instanceResult.get();
+        variables.forEach(instance::setVariable);
         final Field targetField = instance.getFieldStorage().getFieldById(mapIds.get(0)).orElseThrow();
         // Resolve portal
         final Optional<PortalInfo> portalResult = targetField.getPortalByName(portalName);
@@ -686,18 +668,14 @@ public final class ScriptManagerImpl implements ScriptManager {
     }
 
     @Override
-    public void partyWarpInstance(int mapId, String portalName, int returnMap, int timeLimit) {
-        partyWarpInstance(List.of(mapId), portalName, returnMap, timeLimit);
-    }
-
-    @Override
-    public void partyWarpInstance(List<Integer> mapIds, String portalName, int returnMap, int timeLimit) {
+    public void partyWarpInstance(List<Integer> mapIds, String portalName, int returnMap, int timeLimit, Map<String, String> variables) {
         // Create instance
         final Optional<Instance> instanceResult = user.getConnectedServer().createInstance(mapIds, returnMap, timeLimit);
         if (instanceResult.isEmpty()) {
             throw new ScriptError("Could not create instance for map IDs : %s", mapIds);
         }
         final Instance instance = instanceResult.get();
+        variables.forEach(instance::setVariable);
         final Field targetField = instance.getFieldStorage().getFieldById(mapIds.get(0)).orElseThrow();
         // Resolve portal
         final Optional<PortalInfo> portalResult = targetField.getPortalByName(portalName);
@@ -728,7 +706,7 @@ public final class ScriptManagerImpl implements ScriptManager {
     }
 
     @Override
-    public void spawnMob(int templateId, MobAppearType appearType, int x, int y) {
+    public void spawnMob(int templateId, int summonType, int x, int y, boolean isLeft) {
         final Optional<MobTemplate> mobTemplateResult = MobProvider.getMobTemplate(templateId);
         if (mobTemplateResult.isEmpty()) {
             throw new ScriptError("Could not resolve mob template ID : %d", templateId);
@@ -741,10 +719,12 @@ public final class ScriptManagerImpl implements ScriptManager {
                 y,
                 footholdResult.map(Foothold::getSn).orElse(0)
         );
-        mob.setAppearType(appearType);
+        mob.setLeft(isLeft);
+        mob.setSummonType(summonType);
         field.getMobPool().addMob(mob);
     }
 
+    @Override
     public void spawnNpc(int templateId, int x, int y, boolean isFlip, boolean originalField) {
         final Optional<NpcTemplate> npcTemplateResult = NpcProvider.getNpcTemplate(templateId);
         if (npcTemplateResult.isEmpty()) {
@@ -764,6 +744,16 @@ public final class ScriptManagerImpl implements ScriptManager {
         targetField.getNpcPool().addNpc(npc);
     }
 
+    @Override
+    public void removeNpc(int templateId) {
+        final Optional<Npc> npcResult = field.getNpcPool().getByTemplateId(templateId);
+        if (npcResult.isEmpty()) {
+            throw new ScriptError("Could not find npc with template ID : %d", templateId);
+        }
+        field.getNpcPool().removeNpc(npcResult.get());
+    }
+
+    @Override
     public void spawnReactor(int templateId, int x, int y, boolean isFlip, int reactorTime, boolean originalField) {
         final Optional<ReactorTemplate> reactorTemplateResult = ReactorProvider.getReactorTemplate(templateId);
         if (reactorTemplateResult.isEmpty()) {
