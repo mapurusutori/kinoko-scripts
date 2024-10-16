@@ -11,6 +11,9 @@ public enum QuestRecordType {
     TatamoLikeness(7810),           // Chief Tatamo Magic Seed Discount
     WorldTour(8792),                // World Tour Return Map
 
+    DualBladeFifthMission(2358),
+    DualBladeDiary(2369),
+    DualBladeFirstMission(7635),
     CygnusTutorial(20022),          // Cygnus Tutorial
     AranTutorial(21002),            // Aran Tutorial
     AranGuideEffect(21003),         // Aran Tutorial Effects

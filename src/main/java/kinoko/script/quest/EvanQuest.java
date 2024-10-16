@@ -46,7 +46,7 @@ public final class EvanQuest extends ScriptHandler {
     // NPCS ------------------------------------------------------------------------------------------------------------
 
     @Script("periPatrol")
-    public static void periPatrol(ScriptManager sm) {
+    public static void periPatrol(ScriptManager sm) { // TODO: Complete GMS-like text and options. This is a lazy workaround, but mostly finished and GMS-like.
         // Perion Warning Post (1022107)
         //   North Rocky Mountain : Dusty Wind Hill (102020100)
         //   Burnt Land : Wild Boar Land (102030000)
@@ -477,8 +477,11 @@ public final class EvanQuest extends ScriptHandler {
     public static void enterBlackFrog(ScriptManager sm) {
         // Ludibrium : Ludibrium Village (220000300)
         //   scr00 (703, 104)
-        if (sm.hasQuestStarted(22596)) {
-            sm.playPortalSE(); // TODO - don't spawn after defeating hiver
+        if (sm.hasQuestCompleted(22596)) {
+            sm.playPortalSE();
+            sm.warp(922030001, "out00"); // Evan warps to map without Hiver after completing questline, SDI portal should not be accessible after it's first use.
+        } else if (sm.hasQuestStarted(22596)) {
+            sm.playPortalSE();
             sm.warpInstance(922030001, "out00", 211000300, 60 * 10);
             sm.spawnNpc(1013206, 175, 31, false, false);
         } else if (sm.hasQuestStarted(22581) || sm.hasQuestCompleted(22581)) {
@@ -544,7 +547,6 @@ public final class EvanQuest extends ScriptHandler {
 
 
     // REACTORS --------------------------------------------------------------------------------------------------------
-
     @Script("farmItem0")
     public static void farmItem0(ScriptManager sm) {
         // farmItem0 (1002008)
@@ -566,7 +568,6 @@ public final class EvanQuest extends ScriptHandler {
 
 
     // QUESTS - JOB ADVANCEMENT ----------------------------------------------------------------------------------------
-
     @Script("q22100s")
     public static void q22100s(ScriptManager sm) {
         // Dragon Master 1st Job Advancement (22100 - start)
@@ -664,6 +665,7 @@ public final class EvanQuest extends ScriptHandler {
         sm.addSkill(22181003, 0, 20); // Soul Stone
     }
 
+    // QUESTS - GENERAL ------------------------------------------------------------------------------------------------
     @Script("q2344s")
     public static void q2344s(ScriptManager sm) {
         // Mushking Empire in Danger (2344 - start)
@@ -710,8 +712,7 @@ public final class EvanQuest extends ScriptHandler {
     }
 
 
-    // QUESTS - EVAN MOUNT ---------------------------------------------------------------------------------------------
-
+    // QUESTS - MOUNT --------------------------------------------------------------------------------------------------
     @Script("q22401s")
     public static void q22401s(ScriptManager sm) {
         // Is Dragon Mounting Possible? (22401 - start)
@@ -848,7 +849,6 @@ public final class EvanQuest extends ScriptHandler {
 
 
     // QUESTS - STORY --------------------------------------------------------------------------------------------------
-
     @Script("q23908s")
     public static void q23908s(ScriptManager sm) {
         // Mir's Reaction (23908 - start)
@@ -1077,7 +1077,7 @@ public final class EvanQuest extends ScriptHandler {
         sm.setPlayerAsSpeaker(true);
         sm.sayBoth("#bI swear, Stan and I aren't trying to pull a fast one on you!");
         sm.setPlayerAsSpeaker(false);
-        if (!sm.askAccept("This test is simple. You have to defeat #r#k in the training center, that's all. It's not going to be easy finding them, since they hang out amongst the Orange Mushrooms. Haha... Do you still want to enter?")) {
+        if (!sm.askAccept("This test is simple. You have to defeat #r#o9300386##k in the training center, that's all. It's not going to be easy finding them, since they hang out amongst the Orange Mushrooms. Haha... Do you still want to enter?")) {
             sm.sayOk("I KNEW it!");
             return;
         }

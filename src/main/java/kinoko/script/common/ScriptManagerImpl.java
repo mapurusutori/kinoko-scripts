@@ -235,6 +235,7 @@ public final class ScriptManagerImpl implements ScriptManager {
                 cs.setMaxMp(cs.getMaxMp() + Util.getRandom(10, 20));
             }
             case EVAN_1, EVAN_2, EVAN_3, EVAN_4, EVAN_5, EVAN_6, EVAN_7, EVAN_8, EVAN_9, EVAN_10 -> {
+                // Not accurate. Needs further research and review.
                 cs.setMaxHp(cs.getMaxHp() + Util.getRandom(15, 25));
                 cs.setMaxMp(cs.getMaxMp() + Util.getRandom(150, 200));
             }

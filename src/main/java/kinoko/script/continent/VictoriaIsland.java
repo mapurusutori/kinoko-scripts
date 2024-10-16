@@ -234,6 +234,14 @@ public final class VictoriaIsland extends ScriptHandler {
         sm.warp(101000003, "jobout00"); // Ellinia : Magic Library
     }
 
+    @Script("Dual_moveGate")
+    public static void Dual_moveGate(ScriptManager sm) {
+        // Kerning City : Kerning City (103000000)
+        //   dual00 (-43, -144)
+        sm.playPortalSE();
+        sm.warp(103050000, "out00"); // Victoria Road : Kerning City Back Alley
+    }
+
     @Script("inERShip")
     public static void inERShip(ScriptManager sm) {
         // Port Road : Victoria Tree Platform (104020100)
