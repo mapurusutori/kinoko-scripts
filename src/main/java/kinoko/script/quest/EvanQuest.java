@@ -17,7 +17,7 @@ import java.util.List;
 public final class EvanQuest extends ScriptHandler {
     public static final int SAFE_GUARD = 9300389;
 
-    // FIELDS
+    // FIELDS ----------------------------------------------------------------------------------------------------------
     @Script("dollCave01")
     public static void dollCave01(ScriptManager sm) {
     }
@@ -44,7 +44,6 @@ public final class EvanQuest extends ScriptHandler {
 
 
     // NPCS ------------------------------------------------------------------------------------------------------------
-
     @Script("periPatrol")
     public static void periPatrol(ScriptManager sm) { // TODO: Complete GMS-like text and options. This is a lazy workaround, but mostly finished and GMS-like.
         // Perion Warning Post (1022107)
@@ -110,6 +109,7 @@ public final class EvanQuest extends ScriptHandler {
                 if (!sm.getQRValue(QuestRecordType.EvanPerionSigns).contains("2")) {
                     sm.setPlayerAsSpeaker(true);
                     sm.sayOk("#b(Hmm, it seems I missed a sign. I better go back.)");
+                    return;
                 }
                 sm.sayNext("#b#m102030100# Warning Sign#k\r\n\r\nCreatures: #r#o2230102##k, #r#o4230103##k\r\nNotes: None\r\nCheck:");
                 sm.setPlayerAsSpeaker(true);
@@ -213,23 +213,19 @@ public final class EvanQuest extends ScriptHandler {
             }
             sm.sayOk("All aboard!");
             sm.warpInstance(200090090, "sp", 104000000, 60 * 15); // Yes, it's a 15 minute ride
-            return;
-        }
-        if (sm.getUser().getFieldId() == 200090090) {
+        } else if (sm.getUser().getFieldId() == 200090090) {
             if (!sm.askAccept("Do you want to return to #bSlumbering Dragon Island#k?")) {
                 sm.sayOk("Alright, sit back and relax! We'll arrive at #b#m104000000##k in no time!");
                 return;
             }
-            sm.sayOk("Alright, let's turn 'er around then!");
+            sm.sayOk("Alright, let's turn 'er 'round then!");
             sm.warp(914100000);
-            return;
-        }
-        if (sm.getUser().getFieldId() == 200090080) {
+        } else if (sm.getUser().getFieldId() == 200090080) {
             if (!sm.askAccept("Do you want to return to #b#m104000000##k?")) {
                 sm.sayOk("Are you sure? Why are you even going there?");
                 return;
             }
-            sm.sayOk("Alright, let's turn 'er around then!");
+            sm.sayOk("Alright, let's turn 'er 'round then!");
             sm.warp(104000000);
         }
     }
@@ -240,22 +236,20 @@ public final class EvanQuest extends ScriptHandler {
         //   Hidden Street : Frog House  (922030000)
         if (sm.hasQuestStarted(22582)) {
             sm.warp(922030002, "out00");
-            return;
-        }
-        // I'm pretty sure these aren't GMS95-like, but it's here for convenience.
-        if (sm.hasQuestStarted(22583)) {
+        } else if (sm.hasQuestStarted(22583)) { // I'm pretty sure these aren't GMS95-like, but it's here for convenience.
             sm.warpInstance(List.of(
                     922030010,
                     922030011
             ), "out00", 220011000, 60 * 10);
-            return;
-        }
-        if (sm.hasQuestStarted(22584)) {
+        } else if (sm.hasQuestStarted(22584)) {
             sm.warpInstance(List.of(
                     922030020,
                     922030021,
                     922030022
             ), "out00", 220011000, 60 * 10);
+        } else {
+            sm.sayOk("How did you get in here?");
+            sm.warp(211000300);
         }
     }
 
@@ -315,10 +309,10 @@ public final class EvanQuest extends ScriptHandler {
             sm.setPlayerAsSpeaker(true);
             sm.sayBoth("#bYou deceived me! You were lying to me all this time! I will not let you get away with this!");
             sm.setPlayerAsSpeaker(false);
-            sm.sayBoth("What do you mean I deceived you? You let yourself imagine what you wanted. Anyway, thanks to you, we were able to accomplish quite a lot. But you are nothing but a hindrance now.");
+            sm.sayBoth("What do you mean I deceived you? You let yourself imagine what you wanted. Well... no matter, thanks to you, we were able to accomplish quite a lot. But you are nothing but a hindrance now.");
             sm.sayBoth("You better get out of here. Now!");
             sm.spawnMob(9300393, MobAppearType.NORMAL, 230, 31, true);
-            sm.removeNpc(9300393);
+            sm.removeNpc(1013206);
         }
     }
 
@@ -336,12 +330,12 @@ public final class EvanQuest extends ScriptHandler {
 
 
     // PORTALS ---------------------------------------------------------------------------------------------------------
-
     @Script("evanEntrance")
     public static void evanEntrance(ScriptManager sm) {
         // Farm Street : Large Forest Trail 2 (100030320)
         //   west00 (-2046, 36)
-        if (sm.getUser().getCharacterStat().getJob() == 2001) {
+        final int job = sm.getUser().getJob();
+        if (job == 2001) {
             sm.message("You are not allowed to leave the farm yet.");
             return;
         }
@@ -382,11 +376,11 @@ public final class EvanQuest extends ScriptHandler {
             sm.setQRValue(QuestRecordType.EvanEnragedGolem, "1");
             sm.setPlayerAsSpeaker(true);
             sm.sayOk("#bHmm, this puppet looks familiar. I better go report back to #p1012003#.");
-            return;
-        }
-        if (sm.hasQuestStarted(22559)) {
+        } else if (sm.hasQuestStarted(22559)) {
             sm.playPortalSE();
             sm.warp(910600010, "out00");
+        } else {
+            sm.message("A mysterious force prevents you from entering.");
         }
     }
 
@@ -430,26 +424,20 @@ public final class EvanQuest extends ScriptHandler {
         if (sm.hasQuestStarted(22580)) {
             sm.playPortalSE();
             sm.warp(914100020, "out00");
-            return;
-        }
-        if (sm.hasQuestStarted(22588)) {
+        } else if (sm.hasQuestStarted(22588)) {
             sm.playPortalSE();
             sm.warpInstance(914100020, "out00", 922030000, 60 * 10);
             sm.spawnReactor(1409000, -243, 6, false, -1, false);
-            return;
-        }
-        if (sm.hasQuestStarted(22589)) {
+        } else if (sm.hasQuestStarted(22589)) {
             sm.playPortalSE();
             sm.warpInstance(914100023, "out00", 914100010, 60 * 5);
             sm.spawnNpc(1013204, -245, 53, false, false);
-            return;
-        }
-        if (sm.hasQuestCompleted(22589)) {
+        } else if (sm.hasQuestCompleted(22589)) {
             sm.playPortalSE();
             sm.warp(914100021, "out00");
-            return;
+        } else {
+            sm.message("A mysterious force prevents you from entering.");
         }
-        sm.message("A mysterious force prevents you from entering.");
     }
 
     @Script("stopIceWall")
@@ -504,17 +492,15 @@ public final class EvanQuest extends ScriptHandler {
                     922030010,
                     922030011
             ), "out00", 220011000, 60 * 10);
-            return;
-        }
-        if (sm.hasQuestStarted(22584)) {
+        } else if (sm.hasQuestStarted(22584)) {
             sm.warpInstance(List.of(
                     922030020,
                     922030021,
                     922030022
             ), "out00", 220011000, 60 * 10);
-            return;
+        } else {
+            sm.warp(220011001, "out00");
         }
-        sm.warp(220011001, "out00");
     }
 
     @Script("enterSDI")
@@ -739,7 +725,7 @@ public final class EvanQuest extends ScriptHandler {
         sm.setPlayerAsSpeaker(true);
         sm.sayNext("#bOf course. We should go talk to #p1032001# in #m101000000#.");
         sm.setPlayerAsSpeaker(false);
-        sm.sayBoth("Ok! Ok! Let's gooo!");
+        sm.sayBoth("Okay! Okay! Let's gooo!");
     }
 
     @Script("q22403s")
@@ -762,14 +748,16 @@ public final class EvanQuest extends ScriptHandler {
         sm.setPlayerAsSpeaker(true);
         sm.sayBoth("#bUhh, what? Err... No.");
         sm.setPlayerAsSpeaker(false);
-        sm.sayBoth("Hm. You're a peculiar one. Dragon Master... No, I've never heard of it. I must make a note to look into that. Yes.");
+        sm.sayBoth("Hm. You're a peculiar one.");
+        sm.sayBoth("Dragon Master...");
+        sm.sayBoth("No, I've never heard of it. I must make a note to look into that. Yes...");
         sm.sayBoth("Anyway... You asked about a saddle?");
         if (!sm.askYesNo("The Knights' saddles aren't made here. We just don't have the resources for that. We outsource our saddle production. I can assume you'd like to find out where, am I right?")) {
             sm.sayOk("I suggest you leave. Immediately.");
             return;
         }
         sm.forceStartQuest(22403);
-        sm.sayNext("All our saddles are made by #b#p2060005##k who oversees the #b#m230000003##k at the #b#m230000000##k.\r\n\r\n#bThey are very high quality saddles, but they cost so much you'll feel as though your eyeballs are popping out of your head. So prepare yourself.");
+        sm.sayNext("All our saddles are made by #b#p2060005##k who oversees the #b#m230000003##k at the #b#m230000000##k.\r\n\r\n#e#rThey are very high quality saddles, but they cost so much you'll feel as though your eyeballs are popping out of your head. So prepare yourself.");
         sm.sayBoth("Is that all you need then? Then please see to it that you leave the island immediately. You seem nice, but rules are rules. We don't permit outsiders to linger.");
     }
 
@@ -1222,8 +1210,7 @@ public final class EvanQuest extends ScriptHandler {
         sm.sayBoth("I'll send word if I discover anything.\r\n\r\n#fUI/UIWindow2.img/QuestIcon/4/0#\r\n#fUI/UIWindow2.img/QuestIcon/8/0# 17000 exp\r\n#fUI/UIWindow2.img/QuestIcon/10/0# 1 sp");
         sm.forceCompleteQuest(22564);
         sm.addExp(17000);
-        sm.getUser().getCharacterStat().getSp().addSp(JobConstants.getJobLevel(2212), 2); // Have to make sure the SP is being given to the correct job
-        sm.getUser().write(WvsContext.statChanged(Stat.SP, sm.getUser().getCharacterStat().getSp(), false));
+        sm.addSp(2212, 2);
     }
 
     @Script("q22565s")
@@ -1239,8 +1226,7 @@ public final class EvanQuest extends ScriptHandler {
         }
         sm.forceCompleteQuest(22565);
         sm.addExp(20000);
-        sm.getUser().getCharacterStat().getSp().addSp(JobConstants.getJobLevel(2212), 2); // Have to make sure the SP is being given to the correct job
-        sm.getUser().write(WvsContext.statChanged(Stat.SP, sm.getUser().getCharacterStat().getSp(), false));
+        sm.addSp(2212, 2);
         sm.sayOk("All right, then! We'll give that #b#p1032001##k, or whatever his name is, time to find out more. In the meantime, let's train and get even stronger! Let's become heroes! Let's go help people!");
     }
 
@@ -1253,8 +1239,7 @@ public final class EvanQuest extends ScriptHandler {
         sm.forceCompleteQuest(22567);
         sm.removeItem(4032468);
         sm.addExp(22500);
-        sm.getUser().getCharacterStat().getSp().addSp(JobConstants.getJobLevel(2212), 1); // Have to make sure the SP is being given to the correct job
-        sm.getUser().write(WvsContext.statChanged(Stat.SP, sm.getUser().getCharacterStat().getSp(), false));
+        sm.addSp(2212, 1);
         sm.sayNext("#bPhew! I thought the mission would be easy since I'm a temporary member and all, but it was tough! It's so exciting being part of this secret organization!");
         sm.setPlayerAsSpeaker(false);
         sm.setSpeakerId(1013000);
@@ -1335,8 +1320,7 @@ public final class EvanQuest extends ScriptHandler {
             return;
         }
         sm.forceCompleteQuest(22578);
-        sm.getUser().getCharacterStat().getSp().addSp(JobConstants.getJobLevel(2213), 2); // Have to make sure the SP is being given to the correct job
-        sm.getUser().write(WvsContext.statChanged(Stat.SP, sm.getUser().getCharacterStat().getSp(), false));
+        sm.addSp(2213, 2);
         sm.setPlayerAsSpeaker(true);
         sm.sayOk("#bBut I'm sure there's a reason for it. It's for a good cause, but... I'll ask about it next time. Yeah, I'll just ask what the organization is really about when I'm given my next mission.");
         sm.addExp(30000);
@@ -1429,8 +1413,7 @@ public final class EvanQuest extends ScriptHandler {
         }
         sm.forceCompleteQuest(22585);
         sm.addExp(50000);
-        sm.getUser().getCharacterStat().getSp().addSp(JobConstants.getJobLevel(2214), 1);
-        sm.getUser().write(WvsContext.statChanged(Stat.SP, sm.getUser().getCharacterStat().getSp(), false));
+        sm.addSp(2214, 1);
         sm.sayOk("So, the Black Wings... I don't want to be suspicious of them, but I can't help it...");
     }
 

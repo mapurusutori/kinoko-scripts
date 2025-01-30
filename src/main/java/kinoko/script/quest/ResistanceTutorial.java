@@ -34,34 +34,24 @@ public class ResistanceTutorial extends ScriptHandler {
         // Ulrika (2159001)
         //   Dangerous Hide-and-Seek : Neglected Rocky Mountain (931000000)
         sm.sayNext("There you are, #h0#! You're late. Get over here.", ScriptMessageParam.FLIP_SPEAKER);
-
         sm.setSpeakerId(VON);
         sm.sayBoth("What was the hold up? You scared or something?", ScriptMessageParam.SPEAKER_ON_RIGHT);
-
         sm.sayBoth("Don't be ridiculous.", ScriptMessageParam.PLAYER_AS_SPEAKER);
-
         sm.setSpeakerOnRight(true);
         sm.setSpeakerId(JUN);
         sm.sayBoth("You're not s-s-scared at all? I am, a little b-b-bit... The grown-ups warned us never to venture into the #bVerne Mines#k... Plus, there are all those #rBlack Wings#k around, watching us, I just know it.");
-
         sm.setSpeakerId(VON);
         sm.sayBoth("We snuck here, Jun. No one saw us. No one's watching us, okay? Come on, when else would we have ever gotten the chance to leave #bEdelstein#k? Don't be a chicken.");
-
         sm.setSpeakerId(JUN);
         sm.sayBoth("But what if we get in trouble?");
         sm.setSpeakerOnRight(false);
-
         sm.setSpeakerId(ULRIKA);
         sm.sayBoth("Jun, we're already here. If we're going to get in trouble, let's at least have some fun first. Let's play hide-and-seek!", ScriptMessageParam.FLIP_SPEAKER);
-
         sm.sayBoth("Hide and seek?", ScriptMessageParam.PLAYER_AS_SPEAKER);
-
         sm.setSpeakerId(VON);
         sm.sayBoth("Ugh, la-ame.", ScriptMessageParam.SPEAKER_ON_RIGHT);
-
         sm.setSpeakerId(ULRIKA);
         sm.sayBoth("Don't be a brat, Von. What? Are you scared to hide all by yourself in these big, bad caves? *snicker*\r\n#h0#, since you were late, you're it. Count to 10 and then come find us. No peeking.", ScriptMessageParam.FLIP_SPEAKER);
-
         sm.warp(MAP_HIDESEEK);
     }
 
