@@ -53,6 +53,7 @@ import kinoko.world.user.stat.StatConstants;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public final class ScriptManagerImpl implements ScriptManager {
@@ -788,7 +789,7 @@ public final class ScriptManagerImpl implements ScriptManager {
                     continue;
                 }
                 final int quantity = Util.getRandom(reward.getMin(), reward.getMax());
-                final Item item = itemInfoResult.get().createItem(user.getNextItemSn(), quantity);
+                final Item item = itemInfoResult.get().createItem(user.getNextItemSn(), quantity, ItemVariationOption.NORMAL);
                 drops.add(Drop.item(DropOwnType.USEROWN, source, item, user.getCharacterId(), reward.getQuestId()));
             }
         }
@@ -820,6 +821,18 @@ public final class ScriptManagerImpl implements ScriptManager {
 
 
     // EVENT METHODS ---------------------------------------------------------------------------------------------------
+
+    @Override
+    public void sleep(long delay, TimeUnit timeUnit) {
+        user.unlock();
+        try {
+            timeUnit.sleep(delay); // Thread.sleep
+        } catch (InterruptedException e) {
+            throw new ScriptError("Interrupted during sleep");
+        } finally {
+            user.lock(); // executes before ScriptError propagates to ScriptDispatcher
+        }
+    }
 
     @Override
     public boolean checkParty(int memberCount, int levelMin) {

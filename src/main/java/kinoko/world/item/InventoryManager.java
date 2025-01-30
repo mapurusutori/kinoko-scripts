@@ -142,6 +142,15 @@ public final class InventoryManager {
         return getItemCount(itemId) >= quantity;
     }
 
+    public boolean hasEquipped(int itemId) {
+        for (Item item : getEquipped().getItems().values()) {
+            if (item.getItemId() == itemId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Optional<InventoryOperation> updateItem(int position, Item item) {
         final InventoryType inventoryType = InventoryType.getByItemId(item.getItemId());
         final Inventory inventory = getInventoryByType(InventoryType.getByPosition(inventoryType, position));
@@ -167,7 +176,7 @@ public final class InventoryManager {
             return Optional.empty();
         } else if (item.getQuantity() > quantity) {
             // Deduct quantity
-            item.setQuantity((short) (item.getQuantity() - 1));
+            item.setQuantity((short) (item.getQuantity() - quantity));
             return Optional.of(InventoryOperation.itemNumber(inventoryType, position, item.getQuantity()));
         } else {
             // Remove item

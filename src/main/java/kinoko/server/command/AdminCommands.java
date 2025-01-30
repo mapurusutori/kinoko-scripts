@@ -32,10 +32,7 @@ import kinoko.world.field.mob.Mob;
 import kinoko.world.field.mob.MobLeaveType;
 import kinoko.world.field.npc.Npc;
 import kinoko.world.field.reactor.Reactor;
-import kinoko.world.item.InventoryManager;
-import kinoko.world.item.InventoryOperation;
-import kinoko.world.item.InventoryType;
-import kinoko.world.item.Item;
+import kinoko.world.item.*;
 import kinoko.world.job.Job;
 import kinoko.world.job.JobConstants;
 import kinoko.world.job.explorer.Beginner;
@@ -461,16 +458,24 @@ public final class AdminCommands {
             user.write(MessagePacket.system("Could not resolve mob template ID : %d", templateId));
             return;
         }
+        final int count;
+        if (args.length > 2) {
+            count = Integer.parseInt(args[2]);
+        } else {
+            count = 1;
+        }
         final Field field = user.getField();
         final Optional<Foothold> footholdResult = field.getFootholdBelow(user.getX(), user.getY());
-        final Mob mob = new Mob(
-                mobTemplateResult.get(),
-                null,
-                user.getX(),
-                user.getY(),
-                footholdResult.map(Foothold::getSn).orElse(user.getFoothold())
-        );
-        field.getMobPool().addMob(mob);
+        for (int i = 0; i < count; i++) {
+            final Mob mob = new Mob(
+                    mobTemplateResult.get(),
+                    null,
+                    user.getX(),
+                    user.getY(),
+                    footholdResult.map(Foothold::getSn).orElse(user.getFoothold())
+            );
+            field.getMobPool().addMob(mob);
+        }
     }
 
     @Command("togglemob")
@@ -501,7 +506,7 @@ public final class AdminCommands {
             return;
         }
         final ItemInfo ii = itemInfoResult.get();
-        final Item item = ii.createItem(user.getNextItemSn(), Math.min(quantity, ii.getSlotMax()));
+        final Item item = ii.createItem(user.getNextItemSn(), Math.min(quantity, ii.getSlotMax()), ItemVariationOption.NORMAL);
 
         // Add item
         try (var locked = user.acquire()) {
@@ -1056,5 +1061,10 @@ public final class AdminCommands {
     @Command("reloadshops")
     public static void reloadShops(User user, String[] args) {
         ShopProvider.initialize();
+    }
+
+    @Command({ "reloadcashshop", "reloadcs" })
+    public static void reloadCashShop(User user, String[] args) {
+        CashShop.initialize();
     }
 }

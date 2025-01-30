@@ -6,10 +6,7 @@ import kinoko.provider.npc.NpcTemplate;
 import kinoko.server.dialog.Dialog;
 import kinoko.server.packet.InPacket;
 import kinoko.util.Locked;
-import kinoko.world.item.InventoryManager;
-import kinoko.world.item.InventoryOperation;
-import kinoko.world.item.Item;
-import kinoko.world.item.Trunk;
+import kinoko.world.item.*;
 import kinoko.world.user.User;
 import kinoko.world.user.stat.Stat;
 import org.apache.logging.log4j.LogManager;
@@ -48,7 +45,7 @@ public final class TrunkDialog implements Dialog {
             final Trunk trunk = lockedAccount.get().getTrunk();
             switch (requestType) {
                 case GetItem -> {
-                    inPacket.decodeByte(); // nItemID / 1000000, can be ignored
+                    final InventoryType inventoryType = InventoryType.getByValue(inPacket.decodeByte());
                     final int position = inPacket.decodeByte(); // CTrunkDlg::ITEM->nIdx
                     // Check if user has enough money
                     final InventoryManager im = user.getInventoryManager();
@@ -57,7 +54,7 @@ public final class TrunkDialog implements Dialog {
                         return;
                     }
                     // Check if user can move item from trunk to inventory
-                    final Item item = trunk.getItems().get(position);
+                    final Item item = trunk.getItem(inventoryType, position);
                     if (item == null) {
                         user.write(TrunkPacket.serverMsg("Due to an error, the trade did not happen."));
                         return;
@@ -92,7 +89,8 @@ public final class TrunkDialog implements Dialog {
                         user.write(TrunkPacket.of(TrunkResultType.PutNoMoney));
                         return;
                     }
-                    final Item item = im.getInventoryByItemId(itemId).getItem(position);
+                    final InventoryType inventoryType = InventoryType.getByItemId(itemId);
+                    final Item item = im.getInventoryByType(inventoryType).getItem(position);
                     if (item == null || item.getItemId() != itemId || item.getQuantity() < quantity) {
                         user.write(TrunkPacket.serverMsg("Due to an error, the trade did not happen."));
                         return;
@@ -106,14 +104,27 @@ public final class TrunkDialog implements Dialog {
                     if (!im.addMoney(-getTrunkPut())) {
                         throw new IllegalStateException("Could not deduct trunk put fee");
                     }
-                    final Optional<InventoryOperation> removeItemResult = im.removeItem(position, item);
-                    if (removeItemResult.isEmpty()) {
-                        throw new IllegalStateException("Could not remove item from inventory");
+                    if (item.getItemType() == ItemType.BUNDLE && !ItemConstants.isRechargeableItem(item.getItemId()) && item.getQuantity() > quantity) {
+                        // Update item count
+                        item.setQuantity((short) (item.getQuantity() - quantity));
+                        user.write(WvsContext.inventoryOperation(InventoryOperation.itemNumber(inventoryType, position, item.getQuantity()), false));
+                        // Create partial item
+                        final Item partialItem = new Item(item);
+                        partialItem.setItemSn(user.getNextItemSn());
+                        partialItem.setQuantity((short) quantity);
+                        partialItem.setPossibleTrading(false);
+                        trunk.getItems().add(partialItem);
+                    } else {
+                        // Move full item
+                        final Optional<InventoryOperation> removeItemResult = im.removeItem(position, item);
+                        if (removeItemResult.isEmpty()) {
+                            throw new IllegalStateException("Could not remove item from inventory");
+                        }
+                        item.setPossibleTrading(false);
+                        trunk.getItems().add(item);
+                        user.write(WvsContext.inventoryOperation(removeItemResult.get(), false));
                     }
-                    item.setPossibleTrading(false);
-                    trunk.getItems().add(item);
                     // Update client
-                    user.write(WvsContext.inventoryOperation(removeItemResult.get(), false));
                     user.write(TrunkPacket.putSuccess(trunk));
                     user.write(WvsContext.statChanged(Stat.MONEY, im.getMoney(), true));
                 }

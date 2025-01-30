@@ -1,15 +1,8 @@
 package kinoko.server.node;
 
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import kinoko.util.Util;
 import kinoko.world.user.Account;
 
-import java.net.InetAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,17 +33,6 @@ public abstract class ServerNode extends Node {
             getShutdownFuture().complete(null);
         }
     }
-
-    protected final ChannelFuture startClient(ChannelInitializer<SocketChannel> initializer, InetAddress host, int port) {
-        final Bootstrap b = new Bootstrap();
-        b.group(workerGroup);
-        b.channel(NioSocketChannel.class);
-        b.handler(initializer);
-        b.option(ChannelOption.TCP_NODELAY, true);
-        b.option(ChannelOption.SO_KEEPALIVE, true);
-        return b.connect(host, port);
-    }
-
 
     protected static byte[] getNewIv() {
         final byte[] iv = new byte[4];
